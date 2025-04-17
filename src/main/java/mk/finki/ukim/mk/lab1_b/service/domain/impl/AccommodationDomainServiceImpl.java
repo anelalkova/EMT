@@ -110,9 +110,10 @@ public class AccommodationDomainServiceImpl implements AccommodationDomainServic
 
         Accommodation accommodation = accommodationRepository.findById(accommodationId)
                 .orElseThrow(() -> new RuntimeException("Accommodation not found"));
-
-        user.getReservations().add(accommodation);
-        userRepository.save(user);
+        if(accommodation.getNumAvailableRooms() > 0) {
+            user.getReservations().add(accommodation);
+            userRepository.save(user);
+        }else throw new NoRoomsAvailableException();
     }
 
     @Override
