@@ -1,8 +1,12 @@
 package mk.finki.ukim.mk.lab1_b.service.domain;
 
+import jakarta.persistence.Cache;
+import mk.finki.ukim.mk.lab1_b.dto.CategoryDTO;
 import mk.finki.ukim.mk.lab1_b.model.Accommodation;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Category;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface AccommodationDomainService {
@@ -25,4 +29,8 @@ public interface AccommodationDomainService {
     void confirmReservations(String username);
 
     List<Accommodation> getReservationsForUser(String username);
+
+    List<CategoryDTO> getStatistic();
+
+    void refreshMaterializedView();
 }

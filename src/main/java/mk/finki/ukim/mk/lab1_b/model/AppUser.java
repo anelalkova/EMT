@@ -12,8 +12,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+/*@NamedEntityGraph(
+        name = "AppUser.noReservations",
+        attributeNodes = {
+                @NamedAttributeNode("country"),
+                @NamedAttributeNode("role")
+        }
+)*/
 @Entity
-@Table(name = "users")
 @AllArgsConstructor
 @Data
 public class AppUser implements UserDetails {
@@ -30,15 +36,25 @@ public class AppUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @ManyToOne
+    Country country;
+
     @ManyToMany(fetch = FetchType.EAGER)
-    List<Accommodation> reservations;
+    @JoinTable(
+            name = "app_user_reservations",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "accommodation_id")
+    )
+    private List<Accommodation> reservations;
+
     public AppUser() {}
 
-    public AppUser(String username, String password, Role role) {
+    public AppUser(String username, String password, Role role, Country country) {
         this.username = username;
         this.password = password;
         this.role = role;
         reservations = new ArrayList<>();
+        this.country = country;
     }
 
     @Override

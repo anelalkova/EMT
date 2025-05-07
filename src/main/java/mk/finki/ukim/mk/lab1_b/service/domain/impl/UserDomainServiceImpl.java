@@ -1,8 +1,10 @@
 package mk.finki.ukim.mk.lab1_b.service.domain.impl;
 
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Role;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.InvalidArgumentsException;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.InvalidUserCredentialsException;
+import mk.finki.ukim.mk.lab1_b.repository.HostsByCountryRepository;
 import mk.finki.ukim.mk.lab1_b.repository.UserRepository;
 import mk.finki.ukim.mk.lab1_b.service.domain.UserDomainService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,11 +19,13 @@ public class UserDomainServiceImpl implements UserDomainService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final HostsByCountryRepository hostsByCountryRepository;
 
     public UserDomainServiceImpl(UserRepository userRepository,
-                                 PasswordEncoder passwordEncoder) {
+                                 PasswordEncoder passwordEncoder, HostsByCountryRepository hostsByCountryRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.hostsByCountryRepository = hostsByCountryRepository;
     }
 
     @Override
@@ -29,8 +33,21 @@ public class UserDomainServiceImpl implements UserDomainService {
         if (userRepository.findByUsername(appUser.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
-        AppUser user = new AppUser(appUser.getUsername(), passwordEncoder.encode(appUser.getPassword()), appUser.getRole());
-        return userRepository.save(user);
+
+        AppUser user = new AppUser(
+                appUser.getUsername(),
+                passwordEncoder.encode(appUser.getPassword()),
+                appUser.getRole(),
+                appUser.getCountry()
+        );
+
+        AppUser savedUser = userRepository.save(user);
+
+        if (savedUser.getRole().equals(Role.ROLE_HOST)) {
+            hostsByCountryRepository.refreshMaterializedView();
+        }
+
+        return savedUser;
     }
 
     @Override
@@ -70,4 +87,10 @@ public class UserDomainServiceImpl implements UserDomainService {
     public Optional<AppUser> findByUsernameOptional(String username) {
         return userRepository.findByUsername(username);
     }
+
+    @Override
+    public void refreshMaterializedView() {
+        hostsByCountryRepository.refreshMaterializedView();
+    }
+
 }

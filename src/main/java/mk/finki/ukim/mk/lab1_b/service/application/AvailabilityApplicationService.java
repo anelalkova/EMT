@@ -20,4 +20,6 @@ public interface AvailabilityApplicationService {
     void deleteById(Long id);
 
     List<DisplayAvailabilityDto> findByAccommodationId(Long accommodationId);
+
+    List<DisplayAvailabilityDto> findByHostUsername(String username);
 }

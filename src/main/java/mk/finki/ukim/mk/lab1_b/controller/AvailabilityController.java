@@ -5,6 +5,8 @@ import mk.finki.ukim.mk.lab1_b.dto.DisplayAvailabilityDto;
 import mk.finki.ukim.mk.lab1_b.service.application.AvailabilityApplicationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -67,4 +69,12 @@ public class AvailabilityController {
     public List<DisplayAvailabilityDto> getByAccommodation(@PathVariable Long id) {
         return availabilityApplicationService.findByAccommodationId(id);
     }
+
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('HOST')")
+    @Operation(summary = "Get current host's availabilities", description = "Fetches availabilities for the authenticated host.")
+    public List<DisplayAvailabilityDto> getMyAvailabilities(@AuthenticationPrincipal UserDetails userDetails) {
+        return availabilityApplicationService.findByHostUsername(userDetails.getUsername());
+    }
+
 }

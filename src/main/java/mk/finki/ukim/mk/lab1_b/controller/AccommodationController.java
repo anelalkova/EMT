@@ -1,18 +1,19 @@
 package mk.finki.ukim.mk.lab1_b.controller;
 
-import mk.finki.ukim.mk.lab1_b.dto.CreateAccommodationDto;
-import mk.finki.ukim.mk.lab1_b.dto.CreateReservationDto;
-import mk.finki.ukim.mk.lab1_b.dto.DisplayAccommodationDto;
-import mk.finki.ukim.mk.lab1_b.dto.ErrorResponse;
+import mk.finki.ukim.mk.lab1_b.dto.*;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.InvalidNumberRoomsException;
+import mk.finki.ukim.mk.lab1_b.model.views.AccommodationsPerHostView;
+import mk.finki.ukim.mk.lab1_b.repository.AccommodationsPerHostRepository;
 import mk.finki.ukim.mk.lab1_b.service.application.AccommodationApplicationService;
-import mk.finki.ukim.mk.lab1_b.service.application.UserApplicationService;
+import mk.finki.ukim.mk.lab1_b.service.domain.AccommodationDomainService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -22,9 +23,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 public class AccommodationController {
 
     private final AccommodationApplicationService accommodationService;
-
-    public AccommodationController(AccommodationApplicationService accommodationService) {
+    private final AccommodationsPerHostRepository accommodationsPerHostRepository;
+    public AccommodationController(AccommodationApplicationService accommodationService, AccommodationsPerHostRepository accommodationsPerHostRepository) {
         this.accommodationService = accommodationService;
+        this.accommodationsPerHostRepository = accommodationsPerHostRepository;
     }
 
     @GetMapping()
@@ -132,6 +134,20 @@ public class AccommodationController {
             return ResponseEntity.ok(reservations);
         }
         return ResponseEntity.badRequest().build();
+    }
+
+    @GetMapping("/get-statistic")
+    public ResponseEntity<List<CategoryDTO>> getStatistic() {
+        return ResponseEntity.ok(accommodationService.getStatistics());
+    }
+
+    @GetMapping("/by-host")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Get accommodations by host", description = "Returns the number of accommodations by host.")
+    public List<AccommodationHostDto> getAccommodationsPerHost() {
+        return accommodationsPerHostRepository.findAll().stream()
+                .map(e -> new AccommodationHostDto(e.getUsername(), e.getNum_accommodations()))
+                .collect(Collectors.toList());
     }
 }
 

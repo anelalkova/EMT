@@ -2,28 +2,31 @@ package mk.finki.ukim.mk.lab1_b.service.domain.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import mk.finki.ukim.mk.lab1_b.dto.CategoryDTO;
 import mk.finki.ukim.mk.lab1_b.model.Accommodation;
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Category;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.InvalidNumberRoomsException;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.NoRoomsAvailableException;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.NoSuchUserException;
 import mk.finki.ukim.mk.lab1_b.repository.AccommodationRepository;
+import mk.finki.ukim.mk.lab1_b.repository.AccommodationsPerHostRepository;
 import mk.finki.ukim.mk.lab1_b.repository.UserRepository;
 import mk.finki.ukim.mk.lab1_b.service.domain.AccommodationDomainService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class AccommodationDomainServiceImpl implements AccommodationDomainService {
     private final AccommodationRepository accommodationRepository;
     private final UserRepository userRepository;
+    private final AccommodationsPerHostRepository accommodationsPerHostRepository;
 
-    public AccommodationDomainServiceImpl(AccommodationRepository accommodationRepository, UserRepository userRepository) {
+    public AccommodationDomainServiceImpl(AccommodationRepository accommodationRepository, UserRepository userRepository, AccommodationsPerHostRepository accommodationsPerHostRepository) {
         this.accommodationRepository = accommodationRepository;
         this.userRepository = userRepository;
+        this.accommodationsPerHostRepository = accommodationsPerHostRepository;
     }
 
     @Override
@@ -141,4 +144,27 @@ public class AccommodationDomainServiceImpl implements AccommodationDomainServic
         }
         return userRepository.getReservationsByUsername(username);
     }
+
+    @Override
+    public List<CategoryDTO> getStatistic() {
+        List<Accommodation> accommodations = accommodationRepository.findAll();
+        List<CategoryDTO> categories = new ArrayList<>();
+
+        Map<String, Integer> categoriesCount = new HashMap<>();
+        for(Accommodation accommodation : accommodations) {
+            categoriesCount.put(accommodation.getCategory().name(), categoriesCount.getOrDefault(categoriesCount.get(accommodation.getCategory().name()), 0) + 1);
+        }
+
+        for(Map.Entry<String, Integer> entry : categoriesCount.entrySet()) {
+            categories.add(new CategoryDTO(entry.getKey(), entry.getValue()));
+        }
+
+        return categories;
+    }
+
+    @Override
+    public void refreshMaterializedView() {
+        accommodationsPerHostRepository.refreshMaterializedView();
+    }
+
 }

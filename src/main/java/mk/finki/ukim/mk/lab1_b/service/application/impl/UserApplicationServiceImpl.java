@@ -1,10 +1,11 @@
 package mk.finki.ukim.mk.lab1_b.service.application.impl;
 
-import mk.finki.ukim.mk.lab1_b.dto.CreateUserDto;
-import mk.finki.ukim.mk.lab1_b.dto.DisplayUserDto;
-import mk.finki.ukim.mk.lab1_b.dto.LoginUserDto;
+import mk.finki.ukim.mk.lab1_b.dto.*;
+import mk.finki.ukim.mk.lab1_b.helpers.JwtHelper;
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
+import mk.finki.ukim.mk.lab1_b.model.Country;
 import mk.finki.ukim.mk.lab1_b.service.application.UserApplicationService;
+import mk.finki.ukim.mk.lab1_b.service.domain.CountryDomainService;
 import mk.finki.ukim.mk.lab1_b.service.domain.UserDomainService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,26 +18,37 @@ public class UserApplicationServiceImpl implements UserApplicationService {
 
     private final UserDomainService userDomainService;
     private final PasswordEncoder passwordEncoder;
+    private final CountryDomainService countryDomainService;
+    private final JwtHelper jwtHelper;
 
-    public UserApplicationServiceImpl(UserDomainService userDomainService, PasswordEncoder passwordEncoder) {
+    public UserApplicationServiceImpl(UserDomainService userDomainService, PasswordEncoder passwordEncoder, CountryDomainService countryDomainService, JwtHelper jwtHelper) {
         this.userDomainService = userDomainService;
         this.passwordEncoder = passwordEncoder;
+        this.countryDomainService = countryDomainService;
+        this.jwtHelper = jwtHelper;
     }
 
     @Override
     public Optional<DisplayUserDto> register(CreateUserDto dto) {
-        String encodedPassword = passwordEncoder.encode(dto.password());
-        AppUser user = userDomainService.register(dto.toAppUser(encodedPassword));
+        //String encodedPassword = passwordEncoder.encode(dto.password());
+        Country country = countryDomainService.findById(dto.countryId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid country ID"));
+
+        AppUser user = userDomainService.register(dto.toAppUser(dto.password(), country));
+
         return Optional.of(DisplayUserDto.from(user));
     }
 
     @Override
-    public Optional<DisplayUserDto> login(LoginUserDto loginUserDto) {
+    public Optional<LoginResponseDto> login(LoginUserDto loginUserDto) {
         AppUser user = userDomainService.login(
                 loginUserDto.username(),
                 loginUserDto.password()
         );
-        return Optional.of(DisplayUserDto.from(user));
+
+        String token = jwtHelper.generateToken(user);
+
+        return Optional.of(new LoginResponseDto(token));
     }
 
     @Override
@@ -46,7 +58,7 @@ public class UserApplicationServiceImpl implements UserApplicationService {
     }
 
     @Override
-    public List<AppUser> findAll() {
-        return userDomainService.findAll();
+    public List<DisplayUserDto> findAll() {
+        return userDomainService.findAll().stream().map(DisplayUserDto::from).toList();
     }
 }

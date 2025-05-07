@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import mk.finki.ukim.mk.lab1_b.dto.CreateUserDto;
 import mk.finki.ukim.mk.lab1_b.dto.DisplayUserDto;
+import mk.finki.ukim.mk.lab1_b.dto.LoginResponseDto;
 import mk.finki.ukim.mk.lab1_b.dto.LoginUserDto;
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
 import mk.finki.ukim.mk.lab1_b.model.exceptions.InvalidUserCredentialsException;
@@ -36,21 +37,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Login user", description = "Logs in the user with the provided username and password.")
-    public ResponseEntity<DisplayUserDto> login(HttpServletRequest request) {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-
-        if (username == null || password == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
+    public ResponseEntity<LoginResponseDto> login(@RequestBody LoginUserDto loginUserDto) {
         try {
-            DisplayUserDto displayUserDto = userApplicationService.login(new LoginUserDto(username, password))
+            return userApplicationService.login(loginUserDto)
+                    .map(ResponseEntity::ok)
                     .orElseThrow(InvalidUserCredentialsException::new);
-
-            request.getSession().setAttribute("user", displayUserDto);
-            return ResponseEntity.ok(displayUserDto);
         } catch (InvalidUserCredentialsException e) {
             return ResponseEntity.notFound().build();
         }
@@ -64,7 +55,7 @@ public class AuthController {
 
     @GetMapping("/users")
     @Operation(summary = "Get all users", description = "Fetches a list of all users.")
-    public List<AppUser> getAllUsers() {
+    public List<DisplayUserDto> getAllUsers() {
         return userApplicationService.findAll();
     }
 }

@@ -1,6 +1,7 @@
 package mk.finki.ukim.mk.lab1_b.dto;
 
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
+import mk.finki.ukim.mk.lab1_b.model.Country;
 import mk.finki.ukim.mk.lab1_b.model.enumerations.Role;
 
 public record DisplayUserDto(String username, String password, Role role) {
@@ -13,8 +14,8 @@ public record DisplayUserDto(String username, String password, Role role) {
         );
     }
 
-    public AppUser toAppUser() {
+    public AppUser toAppUser(Country country) {
         // Password is not available in Display DTO, assume null
-        return new AppUser(username, password, role);
+        return new AppUser(username, password, role, country);
     }
 }

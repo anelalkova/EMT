@@ -1,10 +1,13 @@
 package mk.finki.ukim.mk.lab1_b.service.application;
 
+import mk.finki.ukim.mk.lab1_b.dto.CategoryDTO;
 import mk.finki.ukim.mk.lab1_b.dto.CreateAccommodationDto;
 import mk.finki.ukim.mk.lab1_b.dto.CreateReservationDto;
 import mk.finki.ukim.mk.lab1_b.dto.DisplayAccommodationDto;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Category;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface AccommodationApplicationService {
@@ -27,4 +30,6 @@ public interface AccommodationApplicationService {
     void confirmReservations(String username);
 
     List<DisplayAccommodationDto>getReservationsForUser(String username);
+
+    List<CategoryDTO> getStatistics();
 }

@@ -1,57 +1,37 @@
-/*
 package mk.finki.ukim.mk.lab1_b.controller;
 
-import mk.finki.ukim.mk.lab1_b.dto.CreateHostDto;
-import mk.finki.ukim.mk.lab1_b.dto.DisplayHostDto;
-import mk.finki.ukim.mk.lab1_b.model.Host;
-import mk.finki.ukim.mk.lab1_b.service.application.HostApplicationService;
-import org.springframework.http.ResponseEntity;
+import mk.finki.ukim.mk.lab1_b.dto.AccommodationHostDto;
+import mk.finki.ukim.mk.lab1_b.dto.HostCountryDto;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Role;
+import mk.finki.ukim.mk.lab1_b.model.projections.HostProjection;
+import mk.finki.ukim.mk.lab1_b.model.views.HostsByCountryView;
+import mk.finki.ukim.mk.lab1_b.repository.HostsByCountryRepository;
+import mk.finki.ukim.mk.lab1_b.repository.UserRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/hosts")
 public class HostController {
-    private final HostApplicationService hostService;
+    private final HostsByCountryRepository hostsByCountryRepository;
+    private final UserRepository userRepository;
 
-    public HostController(HostApplicationService hostService) {
-        this.hostService = hostService;
+    public HostController(HostsByCountryRepository hostsByCountryRepository, UserRepository userRepository) {
+        this.hostsByCountryRepository = hostsByCountryRepository;
+        this.userRepository = userRepository;
     }
 
-    @GetMapping
-    public List<DisplayHostDto> getAll() {
-        return hostService.findAll();
+    @GetMapping("/by-country")
+    public List<HostCountryDto> getHostCountByCountry() {
+        return hostsByCountryRepository.findAll().stream()
+                .map(e -> new HostCountryDto(e.getCountry(), e.getHostCount()))
+                .collect(Collectors.toList());
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<DisplayHostDto> getById(Long id) {
-        return hostService.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/add")
-    public ResponseEntity<DisplayHostDto> add(@RequestBody CreateHostDto host) {
-        return hostService.save(host).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @PostMapping("/update/{id}")
-    public ResponseEntity<DisplayHostDto> update(@PathVariable Long id, @RequestBody CreateHostDto host) {
-        return hostService.update(id, host).map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> delete(@PathVariable Long id) {
-        if (hostService.findById(id).isPresent()) {
-            hostService.deleteById(id);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.notFound().build();
+    @GetMapping("/names")
+    public List<HostProjection> getHostNames() {
+        return userRepository.findByRole(Role.ROLE_HOST);
     }
 }
-*/

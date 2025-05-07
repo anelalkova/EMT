@@ -2,11 +2,13 @@ package mk.finki.ukim.mk.lab1_b.service.application.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import mk.finki.ukim.mk.lab1_b.dto.CategoryDTO;
 import mk.finki.ukim.mk.lab1_b.dto.CreateAccommodationDto;
 import mk.finki.ukim.mk.lab1_b.dto.CreateReservationDto;
 import mk.finki.ukim.mk.lab1_b.dto.DisplayAccommodationDto;
 import mk.finki.ukim.mk.lab1_b.model.Accommodation;
 import mk.finki.ukim.mk.lab1_b.model.AppUser;
+import mk.finki.ukim.mk.lab1_b.model.enumerations.Category;
 import mk.finki.ukim.mk.lab1_b.service.application.AccommodationApplicationService;
 import mk.finki.ukim.mk.lab1_b.service.domain.AccommodationDomainService;
 import mk.finki.ukim.mk.lab1_b.service.domain.UserDomainService;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -125,5 +128,10 @@ public class AccommodationApplicationServiceImpl implements AccommodationApplica
         }
 
         return Collections.emptyList();
+    }
+
+    @Override
+    public List<CategoryDTO> getStatistics() {
+        return accommodationDomainService.getStatistic();
     }
 }

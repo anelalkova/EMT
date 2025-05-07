@@ -20,4 +20,6 @@ public interface UserDomainService extends UserDetailsService {
     List<AppUser> findAll();
 
     Optional<AppUser> findByUsernameOptional(String username);
+
+    void refreshMaterializedView();
 }
